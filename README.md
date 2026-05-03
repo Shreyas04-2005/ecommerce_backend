@@ -45,12 +45,13 @@ src/
 
 ## ⚙️ Setup Instructions
 
-### 1. Clone repository
-
 ```bash
+
+Clone repository
+
 git clone https://github.com/Shreyas04-2005/ecommerce_backend.git
 
-cd nestjs-ecommerce-backend
+cd ecommerce-backend
 
 Install dependencies:
 npm install
