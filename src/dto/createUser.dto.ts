@@ -1,12 +1,13 @@
-import { IsEmail, IsNotEmpty, MinLength } from "class-validator";
+import { IsEmail, IsNotEmpty, Matches, MinLength } from 'class-validator';
 
-export class CreateUserDto{
+export class CreateUserDto {
+  @IsEmail()
+  email: string;
 
-    @IsEmail()
-    email: string;
-
-    @IsNotEmpty()
-    @MinLength(6)
-    password: string;
-
+  @IsNotEmpty()
+  @Matches(/^(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/, {
+    message:
+      'Password must be at least 6 characters long and include 1 number and 1 special character',
+  })
+  password: string;
 }
