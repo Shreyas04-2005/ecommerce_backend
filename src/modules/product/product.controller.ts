@@ -16,11 +16,13 @@ import { JwtAuthGuard } from '../../guards/jwt-auth-guard';
 import { RolesGuard } from '../../guards/roles-guard';
 import { Roles } from '../../guards/role-decorator';
 import { AddStockDto } from '../../dto/addStock.dto';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @Controller('product')
 export class ProductController {
   constructor(private readonly service: ProductService) {}
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Post('add-product')
@@ -28,6 +30,7 @@ export class ProductController {
     return this.service.addProduct(dto);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Delete('delete-product/:id')
@@ -35,22 +38,25 @@ export class ProductController {
     return this.service.deleteProduct(id);
   }
 
+  @Throttle({ default: { limit: 50, ttl: 60 } })
   @UseGuards(JwtAuthGuard)
   @Get('get-product/:id')
   async getProduct(@Param('id') id: string) {
     return this.service.getProduct(id);
   }
 
+  @Throttle({ default: { limit: 50, ttl: 60 } })
   @UseGuards(JwtAuthGuard)
   @Get('get-products')
   async getAllProduct() {
     return this.service.getAllProduct();
   }
 
-  @UseGuards(JwtAuthGuard,RolesGuard)
-  @Roles("ADMIN")
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   @Patch('add-stock')
-  addStock(@Body()dto:AddStockDto ) {
+  addStock(@Body() dto: AddStockDto) {
     return this.service.addStock(dto);
   }
 }
