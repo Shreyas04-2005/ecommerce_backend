@@ -45,7 +45,7 @@ export class UserController {
   @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  @Get('delete-user/:id')
+  @Delete('delete-user/:id')
   deleteUser(@Param('id') id: string) {
     return this.service.deleteUserById(id);
   }
