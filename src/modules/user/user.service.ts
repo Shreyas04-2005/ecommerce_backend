@@ -75,23 +75,71 @@ export class UserService {
 
   async deleteUserById(id: string) {
     const user = await this.prisma.user.findUnique({
-      where: {
-        id: id,
-      },
-      select: {
-        id: true,
-        email: true,
-        role: true,
+      where: { id },
+      include: {
+        cart: true,
         orders: true,
       },
     });
+
     if (!user) {
-      throw new NotFoundException('user not found with id ', id);
+      throw new NotFoundException(`User not found with id ${id}`);
     }
-    return this.prisma.user.delete({
-      where: {
-        id: id,
-      },
+
+    return this.prisma.$transaction(async (tx) => {
+      // get cart ids
+      const carts = await tx.cart.findMany({
+        where: { userId: id },
+        select: { id: true },
+      });
+
+      const cartIds = carts.map((cart) => cart.id);
+
+      // delete cart items
+      await tx.cartItem.deleteMany({
+        where: {
+          cartId: {
+            in: cartIds,
+          },
+        },
+      });
+
+      // delete carts
+      await tx.cart.deleteMany({
+        where: {
+          userId: id,
+        },
+      });
+
+      // get order ids
+      const orders = await tx.order.findMany({
+        where: { userId: id },
+        select: { id: true },
+      });
+
+      const orderIds = orders.map((order) => order.id);
+
+      // delete order items
+      await tx.orderItem.deleteMany({
+        where: {
+          orderId: {
+            in: orderIds,
+          },
+        },
+      });
+
+      // delete orders
+      await tx.order.deleteMany({
+        where: {
+          userId: id,
+        },
+      });
+
+      // delete user
+      await tx.user.delete({
+        where: { id },
+      });
+      return 'User deleted';
     });
   }
 }
