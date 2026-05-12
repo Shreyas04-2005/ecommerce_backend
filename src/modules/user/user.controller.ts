@@ -12,10 +12,19 @@ import { JwtAuthGuard } from '../../guards/jwt-auth-guard';
 import { RolesGuard } from '../../guards/roles-guard';
 import { Roles } from '../../guards/role-decorator';
 import { Throttle } from '@nestjs/throttler';
+import { CreateUserDto } from '../../dto/createUser.dto';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly service: UserService) {}
+
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @Post('add-admin')
+  addAdmin(@Body() dto: CreateUserDto) {
+    return this.service.createAdmin(dto);
+  }
 
   @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(JwtAuthGuard, RolesGuard)
